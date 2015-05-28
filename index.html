@@ -20,24 +20,90 @@ $(document).ready(function inicio(){
 			},function(error){
 			navigator.notification.alert('Error code: ' + error.code, null, 'Capture Error');
 			},{limit:1});
-		});
+	 });          
+            
+          /*  var btnSubirArchivo=$("#btnSubirArchivo");
+            btnSubirArchivo.tap(function (){
+	    var rutaIMG=$("#imagen").attr("src");
+	      uploadPhoto(rutaIMG);
+	      });
+        
+         function uploadPhoto(foto) {       
+	var options = new FileUploadOptions();
+	options.fileKey="file";
+	options.fileName=$("#nomImagen").val();
+	options.mimeType="image/jpeg";
+
+	var params = {};
+	params.value1 = "test";
+	params.value2 = "param";
+	options.params = params;
+
+	var ft = new FileTransfer();
+	ft.upload(foto,"http://rosaisc.260mb.net/subirArchivo/gardarDatos.php",function(r){		
+		navigator.notification.confirm("El archivo: "+r.response,null, "Notificacion");
+	}, function(err){
+		navigator.notification.alert("Error: "+err.code,null, "Error de Envío");
+	}, options);
+     }
+     */
+        //Para las coordenadas
+        $('#coordenadas').tap(function(){
+        if(navigator.geolocation){
+   
+            function exito(pos){
+          var latitud=$("#latitud").val(pos.coords.latitude);
+          var longitud=$("#longitud").val(pos.coords.longitude);
+            }
+            
+            function falla(error){
+               alert("Error en el servicio Geolocalizador");
+            }
+            
+            var options={maximumAge:500000, enableHighAccuracy:true, timeout:5000};
+            navigator.geolocation.getCurrentPosition(exito, falla, options);
+        }
+        });
+        
 	}, false);
 
+     
+       
   var btnGuardar=$("#guardar");
   btnGuardar.click(function guardar(){
   var nom=$("#nombre").val();
   var direccion=$("#direccion").val();
   var giro=$("#giro").val();
-  var foto=$("#foto").val();
   var latitud=$("#latitud").val();
   var longitud=$("#longitud").val();
-  if(nom=="" || direccion=="" || giro==""|| foto=="" || latitud==""|| longitud=="" ){
+   var rutaIMG=$("#imagen").attr("src");
+	           
+	var options = new FileUploadOptions();
+	options.fileKey="file";
+	options.fileName=nom;
+	options.mimeType="image/jpeg";
+
+	var params = {};
+	params.value1 = "test";
+	params.value2 = "param";
+	options.params = params;
+
+	var ft = new FileTransfer();
+	ft.upload(rutaIMG,"http://rosaisc.260mb.net/upload.php",function(r){		
+		navigator.notification.confirm("El archivo: "+r.response,null, "Notificacion");
+	}, function(err){
+		navigator.notification.alert("Error: "+err.code,null, "Error de Envío");
+	}, options);
+     
+     
+     
+  if(nom=="" || direccion=="" || giro==""|| latitud==""|| longitud=="" ){
 	alert("Ingresa información en todos los campos");
       }else{
     $.ajax({
     type:"POST",
-    url:"gardarDatos.php",
-    data:"nombre="+nom+"&direccion="+direccion+"&giro="+giro+"&foto="+foto+"&latitud="+latitud+"&longitud="+longitud,
+    url:"http://rosaisc.260mb.net/gardarDatos.php",
+    data:"nombre= "+nom+" &direccion= "+direccion+" &giro= "+giro+" &imagen= "+rutaIMG+" &latitud= "+latitud+" &longitud= "+longitud,
     success: registro
     });
       }
@@ -45,170 +111,7 @@ $(document).ready(function inicio(){
     alert(datos);
     	}
    });
-      
-  
-  var btnConsulta=$("#consultar");//consultar todos los registros
-  btnConsulta.click(function cons(){  
-    $.ajax({
-    type:"POST",
-    url:"consulta.php",
-    data:"",
-    success: consultaDatos
-    });
-    
-    function consultaDatos(datos){
-    var respDatos=$.parseJSON(datos);   
-    var respuesta=$("#resconsulta");
-    dibujarTabla(respuesta, respDatos);
-    }
-  });
-  
-  function dibujarTabla(respuesta, respDatos){
-    if(respDatos!=0){
-  respuesta.html("");
-    respuesta.append('<table id="tab" border="2">');
-    var tabla=$("#tab");
-    tabla.html("<tr><th>ID</th><th>Nombre</th><th>Dirección</th><th>Giro</th><th>Foto</th><th>Latitud</th><th>Longitud</th></tr>");
-    for(var i in respDatos){
-      tabla.append("<tr><td>"+respDatos[i].id+"</td>"
-      +"<td>"+respDatos[i].nombre+"</td>"
-      +"<td>"+respDatos[i].direccion+"</td>"
-      +"<td>"+respDatos[i].giro+"</td><"
-      +"<td>"+respDatos[i].foto+"</td>"
-      +"<td>"+respDatos[i].latitud+"</td>"
-      +"<td>"+respDatos[i].longitud+"</td></tr>");
-    }
-    tabla.append("</table>");
-    }else{
-  respuesta.html('<p>No existen registros</p>');
-  }
-  }
-  
-  var consultar2=$("#btnconsultar2");
-  consultar2.click(function cons2(){
-  var valConsulta=$("#valConsulta").val();
-    $.ajax({
-      type:"POST",
-      url:"consultaBD2.php",
-      data:"Id="+valConsulta,
-      success: consultaEstudiante
-    });
-    
-    function consultaEstudiante(datos){
-    var respDatos2=$.parseJSON(datos);   
-    var respuesta2=$("#resconsulta2");
-    dibujarTabla(respuesta2, respDatos2);
-    }
-  });
-  
-  var btnConsAct=$("#btnConsAct");
-  btnConsAct.click(function cargarDat(){  
-    $.ajax({
-    type:"POST",
-    url:"consultaBD.php",
-    data:"",
-    success: cargarDatos
-    });
-    
-    function cargarDatos(datos){   
-      var respCarga=$.parseJSON(datos);       
-      var respConAct=$("#respConAct");      
-      dibujarTabla(respConAct,respCarga);
-    }
-  });
-  
-  var btnCarDatos=$("#btnCarDatos");
-  btnCarDatos.click(function cargarInf(){
-  var Id=parseInt($("#nomActualizar").val());
-    $.ajax({
-    type:"POST",
-    url:"consultaBD2.php",
-    data:"Id="+Id,
-    success: cargarDatosAct
-    });
-    
-    function cargarDatosAct(datos){
-      var consDatAct=$.parseJSON(datos);
-      var respCargDatos=$("#respCargDatos");//Div del resultado para dibujar controles
-       if(consDatAct!=0){ 
-      respCargDatos.html("<label>ID:</label><input type='text' id='Id' disabled='yes'>");
-      respCargDatos.append("<label>Nombre:</label><input type='text' id='nom'>");
-      respCargDatos.append("<label>Edad:</label><input type='text' id='ed'>");
-      respCargDatos.append("<label>Promedio:</label><input type='text' id='pro'>");
-      var Id=$("#Id");
-      var nom=$("#nom");
-      var ed=$("#ed");
-      var pro=$("#pro");
-      for(var i in consDatAct){
-	Id.val(consDatAct[i].Id_Estudiante);
-	nom.val(consDatAct[i].Nombre);
-	ed.val(consDatAct[i].Edad);
-	pro.val(consDatAct[i].Promedio);
-       }   
-  }else{
-  respCargDatos.html('<p>No existen registros</p>');
-  }
-    }
-   });
-  
-   var btnGuarDatos=$("#btnGuarDatos");
-      btnGuarDatos.click(function actual(){
-      var id=parseInt($("#Id").val());
-      var nombre=$("#nom").val();
-      var edad=$("#ed").val();
-      var promedio=$("#pro").val();
-
-      if(nombre=="" || edad=="" || promedio=="" ){
-	alert("Ingresa información en todos los campos");
-      }else{
-	$.ajax({
-	  type:"POST",
-	  url:"actualizar.php",
-	  data:"id="+id+"&nombre="+nombre+"&edad="+edad+"&promedio="+promedio,
-	  success: actualizacion
-	});
-		
-      }   
-      function actualizacion(datos){
-	  alert("datos:"+datos);
-	}
-   });
-      
-<!------------------------------------------------------------------------------>
-var btnConsEliminar=$("#btnConsEliminar");
-  btnConsEliminar.click(function conEliminar(){  
-    $.ajax({
-    type:"POST",
-    url:"consultaBD.php",
-    data:"",
-    success: consultaAntEliminar
-    });
-    
-    function consultaAntEliminar(datos){   
-      var datAntesEliminar=$.parseJSON(datos);       
-      var respConElim=$("#respConElim");      
-      dibujarTabla(respConElim,datAntesEliminar);
-    }
-  });
-  
-
-   var btnEliminar=$("#btnEliminar");
-   
-      btnEliminar.click(function actual(){
-      var idEliminar=parseInt($("#idEliminar").val());
-      
-	$.ajax({
-	  type:"POST",
-	  url:"eliminar.php",
-	  data:"id="+idEliminar,
-	  success: eliminacion
-	});
-		  
-      function eliminacion(datos){
-	  alert(datos);
-	}
-   });
-      
+        
 });
 </script>
 <style type="text/css">
@@ -292,11 +195,12 @@ text-align:center;
     <input type="text" id="direccion">
     <label for="giro">Giro:</label>
     <input type="text" id="giro">
-    	  <ul data-role="listview" data-inset="true" data-dividertheme="b" data-theme="a">
-
-<li><a href="#" id="regFoto">Tomar Foto</a></li>
-		<li><div id="Foto"></div></li>
-          </ul>
+  <ul data-role="listview" data-inset="true" data-dividertheme="b" data-theme="a">
+  <li><a href="#" id="regFoto">Tomar Foto</a></li>
+  <li><div id="Foto"></div></li>
+ 
+    </ul>
+    <input type="button" id="coordenadas" value="Obtener Coordenadas">
     <label for="latitud">Latitud:</label> 
     <input type="text" id="latitud">
     <label for="longitud">Longitud:</label> 
